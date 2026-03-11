@@ -4,6 +4,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getImageUrl } from "@/lib/utils";
 
+// API URL - use NEXT_PUBLIC_API_URL for both client and server components
+const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || "http://localhost:3001";
+
 // Content block types
 interface ContentBlock {
   id: string;
@@ -100,12 +103,15 @@ interface Props {
 
 async function getBlog(slug: string) {
   try {
-    const res = await fetch(
-      `${process.env.API_URL || "http://localhost:3001"}/api/blog/${slug}`,
-      { cache: "no-store" }
-    );
-    if (!res.ok) return null;
+    const url = `${API_URL}/api/blog/${slug}`;
+    console.log("Fetching blog from:", url);
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) {
+      console.log("Blog fetch failed with status:", res.status);
+      return null;
+    }
     const data = await res.json();
+    console.log("Blog fetch success:", data.success);
     return data.data || null;
   } catch (error) {
     console.error("Failed to fetch blog:", error);
@@ -116,7 +122,7 @@ async function getBlog(slug: string) {
 async function getRelatedBlogs(currentSlug: string, category: string) {
   try {
     const res = await fetch(
-      `${process.env.API_URL || "http://localhost:3001"}/api/blog`,
+      `${API_URL}/api/blog`,
       { cache: "no-store" }
     );
     if (!res.ok) return [];
@@ -168,9 +174,7 @@ export async function generateMetadata({ params }: Props) {
 
 export async function generateStaticParams() {
   try {
-    const res = await fetch(
-      `${process.env.API_URL || "http://localhost:3001"}/api/blog`
-    );
+    const res = await fetch(`${API_URL}/api/blog`);
     if (!res.ok) return [];
     const data = await res.json();
     return (data.data || []).map((post: any) => ({

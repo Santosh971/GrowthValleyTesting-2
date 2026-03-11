@@ -3,18 +3,24 @@ import Section from "@/components/Section";
 import PageHeader from "@/components/PageHeader";
 import Button from "@/components/Button";
 
+// API URL - use NEXT_PUBLIC_API_URL for both client and server components
+const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || "http://localhost:3001";
+
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
 async function getCaseStudy(slug: string) {
   try {
-    const res = await fetch(
-      `${process.env.API_URL || "http://localhost:3001"}/api/case-studies/${slug}`,
-      { next: { revalidate: 60 } }
-    );
-    if (!res.ok) return null;
+    const url = `${API_URL}/api/case-studies/${slug}`;
+    console.log("Fetching case study from:", url);
+    const res = await fetch(url, { next: { revalidate: 60 } });
+    if (!res.ok) {
+      console.log("Case study fetch failed with status:", res.status);
+      return null;
+    }
     const data = await res.json();
+    console.log("Case study fetch success:", data.success);
     return data.data;
   } catch (error) {
     console.error("Failed to fetch case study:", error);
