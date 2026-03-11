@@ -7,9 +7,12 @@ const config = require('../config');
 // @route   POST /api/contact
 // @access  Public
 exports.createEnquiry = async (req, res) => {
+  console.log('📧 New enquiry received:', req.body.email);
+
   try {
     const { name, email, phone, company, service, message, source, interest } = req.body;
 
+    // Create enquiry in database
     const enquiry = await Enquiry.create({
       name,
       email,
@@ -20,52 +23,71 @@ exports.createEnquiry = async (req, res) => {
       source: source || 'website',
     });
 
-    // Send notification email to admin and confirmation to user
-    try {
-      // Get admin email from Contact page content or fall back to config
-      // First try Contact page content, then Settings as fallback
-      let adminEmail = null;
+    console.log('✅ Enquiry saved to database:', enquiry._id);
 
+    // Send emails asynchronously (don't block the response)
+    setImmediate(async () => {
       try {
-        const contactContent = await Content.findOne({ page: 'contact' });
-        if (contactContent?.sections?.contactInfo?.email) {
-          adminEmail = contactContent.sections.contactInfo.email;
+        // Get admin email from Contact page content or fall back to config
+        let adminEmail = null;
+
+        try {
+          const contactContent = await Content.findOne({ page: 'contact' });
+          if (contactContent?.sections?.contactInfo?.email) {
+            adminEmail = contactContent.sections.contactInfo.email;
+          }
+        } catch (e) {
+          console.log('📧 Contact content not found, using settings');
         }
-      } catch (e) {
-        // Contact content not found, try Settings
-      }
 
-      // Fallback to Settings contactInfo.email (for backwards compatibility)
-      if (!adminEmail) {
-        const settings = await Settings.getSingleton();
-        adminEmail = settings?.contactInfo?.email || config.adminEmail;
-      }
+        // Fallback to Settings contactInfo.email
+        if (!adminEmail) {
+          try {
+            const settings = await Settings.getSingleton();
+            adminEmail = settings?.contactInfo?.email || config.adminEmail;
+          } catch (e) {
+            adminEmail = config.adminEmail;
+          }
+        }
 
-      // Send notification to admin (don't wait for it)
-      if (adminEmail) {
-        sendEnquiryNotification(enquiry, adminEmail).catch(err => {
-          console.error('Failed to send admin notification email:', err.message);
-        });
-      }
+        console.log('📧 Admin email for notification:', adminEmail);
 
-      // Send confirmation to user (don't wait for it)
-      if (email) {
-        sendEnquiryConfirmation(enquiry).catch(err => {
-          console.error('Failed to send user confirmation email:', err.message);
-        });
-      }
-    } catch (emailError) {
-      // Log email error but don't fail the request
-      console.error('Email notification error:', emailError.message);
-    }
+        // Send notification to admin
+        if (adminEmail) {
+          console.log('📧 Attempting to send admin notification...');
+          const adminResult = await sendEnquiryNotification(enquiry, adminEmail);
+          if (adminResult.success) {
+            console.log('✅ Admin notification sent successfully');
+          } else {
+            console.error('❌ Admin notification failed:', adminResult.error);
+          }
+        }
 
+        // Send confirmation to user
+        if (email) {
+          console.log('📧 Attempting to send user confirmation...');
+          const userResult = await sendEnquiryConfirmation(enquiry);
+          if (userResult.success) {
+            console.log('✅ User confirmation sent successfully');
+          } else {
+            console.error('❌ User confirmation failed:', userResult.error);
+          }
+        }
+      } catch (emailError) {
+        console.error('❌ Email processing error:', emailError.message);
+        console.error('❌ Email error stack:', emailError.stack);
+      }
+    });
+
+    // Return success response immediately (don't wait for emails)
     res.status(201).json({
       success: true,
       message: 'Thank you for your enquiry. We will get back to you soon.',
       data: { id: enquiry._id },
     });
+
   } catch (error) {
-    console.error('Create enquiry error:', error);
+    console.error('❌ Create enquiry error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to submit enquiry',

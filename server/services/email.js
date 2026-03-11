@@ -1,35 +1,64 @@
 const nodemailer = require('nodemailer');
 const config = require('../config');
 
-// Create transporter
+// Log SMTP configuration (without password)
+console.log('📧 SMTP Configuration:', {
+  host: config.smtp.host,
+  port: config.smtp.port,
+  user: config.smtp.user ? '***configured***' : '***missing***',
+  from: config.smtp.from,
+  nodeEnv: config.nodeEnv
+});
+
+// Create a fresh transporter each time to avoid stale connection issues
 const createTransporter = () => {
-  // In development, use console transport
-  if (config.nodeEnv === 'development' && !config.smtp.user) {
-    return nodemailer.createTransport({
-      streamTransport: true,
-      newline: 'unix',
-      buffer: true
-    });
+  // Validate SMTP configuration
+  if (!config.smtp.host || !config.smtp.port) {
+    console.error('❌ SMTP configuration missing: host or port not set');
+    throw new Error('SMTP configuration incomplete');
   }
-  
-  return nodemailer.createTransport({
+
+  if (!config.smtp.user || !config.smtp.pass) {
+    console.error('❌ SMTP credentials missing: user or password not set');
+    throw new Error('SMTP credentials incomplete');
+  }
+
+  console.log('📧 Creating SMTP transporter for:', config.smtp.host, ':', config.smtp.port);
+
+  // Create transporter with explicit configuration
+  const transporter = nodemailer.createTransport({
     host: config.smtp.host,
-    port: config.smtp.port,
-    secure: config.smtp.port === 465,
-    auth: config.smtp.user ? {
+    port: parseInt(config.smtp.port, 10),
+    secure: false, // false for port 587 (STARTTLS), true for port 465
+    auth: {
       user: config.smtp.user,
       pass: config.smtp.pass
-    } : undefined
+    },
+    // Connection timeout settings
+    connectionTimeout: 10000, // 10 seconds
+    socketTimeout: 10000, // 10 seconds
+    // TLS settings for Gmail
+    tls: {
+      rejectUnauthorized: true
+    }
   });
+
+  return transporter;
 };
 
-let transporter = null;
-
-const getTransporter = () => {
-  if (!transporter) {
-    transporter = createTransporter();
+/**
+ * Verify SMTP connection
+ */
+const verifyConnection = async () => {
+  try {
+    const transporter = createTransporter();
+    await transporter.verify();
+    console.log('✅ SMTP connection verified successfully');
+    return true;
+  } catch (error) {
+    console.error('❌ SMTP connection verification failed:', error.message);
+    return false;
   }
-  return transporter;
 };
 
 /**
@@ -37,36 +66,63 @@ const getTransporter = () => {
  */
 const sendEmail = async (options) => {
   const { to, subject, html, text, attachments } = options;
-  
+
+  // Log email attempt
+  console.log('📧 Attempting to send email to:', to);
+  console.log('📧 Subject:', subject);
+
+  // Validate required fields
+  if (!to || !subject || (!html && !text)) {
+    console.error('❌ Missing required email fields');
+    return { success: false, error: 'Missing required email fields' };
+  }
+
+  // Create fresh transporter for each send (avoids stale connection issues)
+  let transporter;
+  try {
+    transporter = createTransporter();
+  } catch (error) {
+    console.error('❌ Failed to create transporter:', error.message);
+    return { success: false, error: error.message };
+  }
+
   const mailOptions = {
-    from: config.smtp.from,
+    from: config.smtp.from || config.smtp.user,
     to,
     subject,
     html,
     text: text || html.replace(/<[^>]*>/g, ''),
     attachments
   };
-  
+
   try {
-    const transport = getTransporter();
-    
-    // In development without SMTP, log the email
-    if (config.nodeEnv === 'development' && !config.smtp.user) {
-      console.log('\n📧 Email (Development Mode):');
-      console.log('To:', to);
-      console.log('Subject:', subject);
-      console.log('Body:', text || html.replace(/<[^>]*>/g, ''));
-      console.log('');
-      return { success: true, messageId: 'dev-' + Date.now() };
-    }
-    
-    const info = await transport.sendMail(mailOptions);
-    
-    console.log('✅ Email sent:', info.messageId);
+    // Send email
+    const info = await transporter.sendMail(mailOptions);
+
+    console.log('✅ Email sent successfully!');
+    console.log('   Message ID:', info.messageId);
+    console.log('   Response:', info.response);
+
     return { success: true, messageId: info.messageId };
   } catch (error) {
-    console.error('❌ Email error:', error);
-    return { success: false, error: error.message };
+    console.error('❌ Email sending failed:');
+    console.error('   Error:', error.message);
+    console.error('   Code:', error.code);
+    console.error('   Command:', error.command);
+
+    // Provide more specific error messages
+    let errorMessage = error.message;
+    if (error.code === 'EAUTH') {
+      errorMessage = 'Authentication failed. Check SMTP username and password (use Gmail App Password)';
+    } else if (error.code === 'ECONNECTION') {
+      errorMessage = 'Connection failed. Check SMTP host and port';
+    } else if (error.code === 'ETIMEDOUT') {
+      errorMessage = 'Connection timed out. Check network connectivity';
+    } else if (error.code === 'EENVELOPE') {
+      errorMessage = 'Invalid recipient email address';
+    }
+
+    return { success: false, error: errorMessage };
   }
 };
 
@@ -111,7 +167,7 @@ const sendPasswordResetEmail = async (email, resetToken, resetUrl) => {
     </body>
     </html>
   `;
-  
+
   return sendEmail({ to: email, subject, html });
 };
 
@@ -119,6 +175,8 @@ const sendPasswordResetEmail = async (email, resetToken, resetUrl) => {
  * Send new enquiry notification to admin
  */
 const sendEnquiryNotification = async (enquiry, adminEmail) => {
+  console.log('📧 Sending enquiry notification to admin:', adminEmail);
+
   const subject = `New Enquiry from ${enquiry.name} - Growth Valley`;
   const html = `
     <!DOCTYPE html>
@@ -147,10 +205,10 @@ const sendEnquiryNotification = async (enquiry, adminEmail) => {
             <span class="label">Email:</span> ${enquiry.email}
           </div>
           <div class="info-row">
-            <span class="label">Phone:</span> ${enquiry.phone}
+            <span class="label">Phone:</span> ${enquiry.phone || 'Not provided'}
           </div>
           <div class="info-row">
-            <span class="label">Company:</span> ${enquiry.company}
+            <span class="label">Company:</span> ${enquiry.company || 'Not provided'}
           </div>
           <div class="info-row">
             <span class="label">Service:</span> ${enquiry.service || 'Not specified'}
@@ -167,7 +225,7 @@ const sendEnquiryNotification = async (enquiry, adminEmail) => {
     </body>
     </html>
   `;
-  
+
   return sendEmail({ to: adminEmail, subject, html });
 };
 
@@ -175,6 +233,8 @@ const sendEnquiryNotification = async (enquiry, adminEmail) => {
  * Send enquiry confirmation to user
  */
 const sendEnquiryConfirmation = async (enquiry) => {
+  console.log('📧 Sending confirmation email to user:', enquiry.email);
+
   const subject = 'Thank you for contacting Growth Valley';
   const html = `
     <!DOCTYPE html>
@@ -199,7 +259,7 @@ const sendEnquiryConfirmation = async (enquiry) => {
           <p>Thank you for contacting Growth Valley. We have received your enquiry and will get back to you within 24-48 hours.</p>
           <p>Here's a summary of your message:</p>
           <ul>
-            <li><strong>Company:</strong> ${enquiry.company}</li>
+            <li><strong>Company:</strong> ${enquiry.company || 'Not provided'}</li>
             <li><strong>Service:</strong> ${enquiry.service || 'General Enquiry'}</li>
             <li><strong>Message:</strong> ${enquiry.message.substring(0, 100)}${enquiry.message.length > 100 ? '...' : ''}</li>
           </ul>
@@ -212,12 +272,13 @@ const sendEnquiryConfirmation = async (enquiry) => {
     </body>
     </html>
   `;
-  
+
   return sendEmail({ to: enquiry.email, subject, html });
 };
 
 module.exports = {
   sendEmail,
+  verifyConnection,
   sendPasswordResetEmail,
   sendEnquiryNotification,
   sendEnquiryConfirmation
