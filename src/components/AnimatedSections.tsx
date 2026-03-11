@@ -481,6 +481,11 @@ export function AnimatedTestimonialsSection({ testimonials }: { testimonials: an
     setIsAutoPlaying(false);
     setCurrentIndex(slideIndex * cardsPerView);
   };
+  const [expandedCard, setExpandedCard] = useState(null);
+
+  const toggleReadMore = (index) => {
+    setExpandedCard(expandedCard === index ? null : index);
+  };
 
   if (visibleTestimonials.length === 0) return null;
 
@@ -535,12 +540,81 @@ export function AnimatedTestimonialsSection({ testimonials }: { testimonials: an
               }}
             >
               {visibleTestimonials.map((testimonial: any, index: number) => (
+                // <div
+                //   key={testimonial._id || index}
+                //   className="flex-shrink-0 px-4"
+                //   style={{ width: `${100 / cardsPerView}%` }}
+                // >
+                //   <div className="bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-800 p-8 rounded-lg relative overflow-hidden transition-shadow duration-300 hover:shadow-lg h-full">
+                //     {/* Quote Icon */}
+                //     <div className="absolute top-4 right-4 text-accent/10">
+                //       <svg className="w-16 h-16" fill="currentColor" viewBox="0 0 24 24">
+                //         <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+                //       </svg>
+                //     </div>
+
+                //     {/* Rating Stars */}
+                //     {testimonial.rating && (
+                //       <div className="flex gap-1 mb-4">
+                //         {[...Array(5)].map((_, i) => (
+                //           <svg
+                //             key={i}
+                //             className={`w-5 h-5 ${i < testimonial.rating ? 'text-accent' : 'text-brand-grey-300'}`}
+                //             fill="currentColor"
+                //             viewBox="0 0 20 20"
+                //           >
+                //             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                //           </svg>
+                //         ))}
+                //       </div>
+                //     )}
+
+                //     {/* Quote */}
+                //     <blockquote className="text-body text-brand-grey-600 dark:text-brand-grey-300 mb-6 italic relative z-10">
+                //       "{testimonial.quote}"
+                //     </blockquote>
+
+                //     {/* Author */}
+                //     <div className="flex items-center gap-4">
+                //       {testimonial.avatar ? (
+                //         <Image
+                //           src={getImageUrl(testimonial.avatar)}
+                //           alt={testimonial.author}
+                //           width={48}
+                //           height={48}
+                //           className="w-12 h-12 rounded-full object-cover"
+                //           loading="lazy"
+                //         />
+                //       ) : (
+                //         <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center">
+                //           <span className="text-accent font-semibold text-lg">
+                //             {testimonial.author.charAt(0)}
+                //           </span>
+                //         </div>
+                //       )}
+                //       <div>
+                //         <p className="font-semibold text-brand-black dark:text-white">
+                //           {testimonial.author}
+                //         </p>
+                //         {(testimonial.designation || testimonial.company) && (
+                //           <p className="text-body-sm text-brand-grey-500 dark:text-brand-grey-400">
+                //             {testimonial.designation}{testimonial.company && `, ${testimonial.company}`}
+                //           </p>
+                //         )}
+                //       </div>
+                //     </div>
+                //   </div>
+                // </div>
+
                 <div
                   key={testimonial._id || index}
                   className="flex-shrink-0 px-4"
                   style={{ width: `${100 / cardsPerView}%` }}
                 >
-                  <div className="bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-800 p-8 rounded-lg relative overflow-hidden transition-shadow duration-300 hover:shadow-lg h-full">
+                  <div
+                    className={`bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-800 p-8 rounded-lg relative overflow-hidden transition-shadow duration-300 hover:shadow-lg flex flex-col text-left min-h-[340px] ${expandedCard === index ? "h-auto" : ""
+                      }`}
+                  >
                     {/* Quote Icon */}
                     <div className="absolute top-4 right-4 text-accent/10">
                       <svg className="w-16 h-16" fill="currentColor" viewBox="0 0 24 24">
@@ -554,7 +628,8 @@ export function AnimatedTestimonialsSection({ testimonials }: { testimonials: an
                         {[...Array(5)].map((_, i) => (
                           <svg
                             key={i}
-                            className={`w-5 h-5 ${i < testimonial.rating ? 'text-accent' : 'text-brand-grey-300'}`}
+                            className={`w-5 h-5 ${i < testimonial.rating ? "text-accent" : "text-brand-grey-300"
+                              }`}
                             fill="currentColor"
                             viewBox="0 0 20 20"
                           >
@@ -565,12 +640,25 @@ export function AnimatedTestimonialsSection({ testimonials }: { testimonials: an
                     )}
 
                     {/* Quote */}
-                    <blockquote className="text-body text-brand-grey-600 dark:text-brand-grey-300 mb-6 italic relative z-10">
+                    <blockquote
+                      className={`text-body text-brand-grey-600 dark:text-brand-grey-300 mb-4 italic transition-all duration-300 ${expandedCard === index ? "" : "line-clamp-4"
+                        }`}
+                    >
                       "{testimonial.quote}"
                     </blockquote>
 
+                    {/* Read More */}
+                    {testimonial.quote?.length > 120 && (
+                      <button
+                        onClick={() => toggleReadMore(index)}
+                        className="text-accent text-sm font-medium hover:underline mb-4 self-start"
+                      >
+                        {expandedCard === index ? "Read Less" : "Read More"}
+                      </button>
+                    )}
+
                     {/* Author */}
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 mt-auto">
                       {testimonial.avatar ? (
                         <Image
                           src={getImageUrl(testimonial.avatar)}
@@ -587,13 +675,16 @@ export function AnimatedTestimonialsSection({ testimonials }: { testimonials: an
                           </span>
                         </div>
                       )}
+
                       <div>
                         <p className="font-semibold text-brand-black dark:text-white">
                           {testimonial.author}
                         </p>
+
                         {(testimonial.designation || testimonial.company) && (
-                          <p className="text-body-sm text-brand-grey-500 dark:text-brand-grey-400">
-                            {testimonial.designation}{testimonial.company && `, ${testimonial.company}`}
+                          <p className="text-sm text-brand-grey-500 dark:text-brand-grey-400">
+                            {testimonial.designation}
+                            {testimonial.company && `, ${testimonial.company}`}
                           </p>
                         )}
                       </div>
@@ -767,7 +858,11 @@ export function AnimatedCaseStudyPreview({ caseStudyPreview }: { caseStudyPrevie
     setIsAutoPlaying(false);
     setCurrentIndex((prev) => (prev + 1) % visibleCaseStudies.length);
   };
+  const [expandedCard, setExpandedCard] = useState(null);
 
+  const toggleReadMore = (index) => {
+    setExpandedCard(expandedCard === index ? null : index);
+  };
   const goToSlide = (slideIndex: number) => {
     setIsAutoPlaying(false);
     setCurrentIndex(slideIndex * cardsPerView);
@@ -825,32 +920,83 @@ export function AnimatedCaseStudyPreview({ caseStudyPreview }: { caseStudyPrevie
               }}
             >
               {visibleCaseStudies.map((cs: any, index: number) => (
+                // <div
+                //   key={index}
+                //   className="flex-shrink-0 px-4"
+                //   style={{ width: `${100 / cardsPerView}%` }}
+                // >
+                //   <Link
+                //     href={cs.link || '/case-studies'}
+                //     className="block h-full bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-800 p-4 sm:p-6 md:p-8 hover:border-accent hover:shadow-xl transition-all duration-300 rounded-lg min-h-[200px]"
+                //   >
+                //     {/* Category label and result */}
+                //     <div className="flex justify-between items-start mb-3 sm:mb-4">
+                //       <span className="text-xs sm:text-sm md:text-base text-brand-grey-400 dark:text-brand-grey-500 uppercase">
+                //         {cs.industry}
+                //       </span>
+                //       <span className="text-base sm:text-xs md:text-xl lg:text-2xl xl:text-3xl text-accent font-bold">
+                //         {cs.result}
+                //       </span>
+                //     </div>
+                //     {/* Bold white title */}
+                //     <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-brand-black dark:text-white mb-1 sm:mb-2">
+                //       {cs.client}
+                //     </h3>
+                //     {/* Grey description */}
+                //     <p className="text-sm sm:text-base md:text-lg text-brand-grey-500 dark:text-brand-grey-400">
+                //       {cs.description}
+                //     </p>
+                //   </Link>
+                // </div>
+
                 <div
                   key={index}
                   className="flex-shrink-0 px-4"
                   style={{ width: `${100 / cardsPerView}%` }}
                 >
                   <Link
-                    href={cs.link || '/case-studies'}
-                    className="block h-full bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-800 p-4 sm:p-6 md:p-8 hover:border-accent hover:shadow-xl transition-all duration-300 rounded-lg min-h-[200px]"
+                    href={cs.link || "/case-studies"}
+                    className="block h-full bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-800 p-6 md:p-8 hover:border-accent hover:shadow-xl transition-all duration-300 rounded-lg min-h-[260px]"
                   >
-                    {/* Category label and result */}
-                    <div className="flex justify-between items-start mb-3 sm:mb-4">
-                      <span className="text-xs sm:text-sm md:text-base text-brand-grey-400 dark:text-brand-grey-500 uppercase">
-                        {cs.industry}
-                      </span>
-                      <span className="text-base sm:text-xs md:text-xl lg:text-2xl xl:text-3xl text-accent font-bold">
-                        {cs.result}
-                      </span>
+                    <div className="flex flex-col h-full text-left">
+
+                      {/* Top Section */}
+                      <div className="flex justify-between items-start mb-4">
+                        <span className="text-xs sm:text-sm uppercase text-brand-grey-400 dark:text-brand-grey-500">
+                          {cs.industry}
+                        </span>
+
+                        <span className="text-xl sm:text-2xl font-bold text-accent">
+                          {cs.result}
+                        </span>
+                      </div>
+
+                      {/* Title */}
+                      <h3 className="text-xl md:text-2xl font-semibold text-brand-black dark:text-white mb-2">
+                        {cs.client}
+                      </h3>
+
+                      {/* Description */}
+                      <p
+                        className={`text-sm md:text-base text-brand-grey-500 dark:text-brand-grey-400 mb-3 transition-all duration-300 ${expandedCard === index ? "" : "line-clamp-3"
+                          }`}
+                      >
+                        {cs.description}
+                      </p>
+
+                      {/* Read More Button */}
+                      {cs.description?.length > 120 && (
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            toggleReadMore(index);
+                          }}
+                          className="text-accent text-sm font-medium hover:underline mt-auto self-start"
+                        >
+                          {expandedCard === index ? "Read Less" : "Read More"}
+                        </button>
+                      )}
                     </div>
-                    {/* Bold white title */}
-                    <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-brand-black dark:text-white mb-1 sm:mb-2">
-                      {cs.client}
-                    </h3>
-                    {/* Grey description */}
-                    <p className="text-sm sm:text-base md:text-lg text-brand-grey-500 dark:text-brand-grey-400">
-                      {cs.description}
-                    </p>
                   </Link>
                 </div>
               ))}
