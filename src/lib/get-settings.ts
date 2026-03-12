@@ -1,12 +1,7 @@
-// Server-side settings fetching with caching
-// This file runs on the server only and provides cached settings
+// Server-side settings fetching
+// This file runs on the server only and provides fresh settings
 
 const API_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-
-// Cache settings for 5 minutes on the server
-let cachedSettings: any = null;
-let cacheTimestamp: number = 0;
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 // Default settings (duplicated to avoid circular dependency)
 const defaultSettings = {
@@ -76,28 +71,20 @@ function deepMerge<T extends Record<string, any>>(target: T, source: Partial<T> 
 }
 
 /**
- * Fetch site settings from API with server-side caching
+ * Fetch site settings from API - always fresh data
  * This should only be called from server components
  */
 export async function getSettings(): Promise<typeof defaultSettings> {
-  // Return cached settings if still valid
-  if (cachedSettings && (Date.now() - cacheTimestamp) < CACHE_TTL) {
-    return cachedSettings;
-  }
-
   try {
     const response = await fetch(`${API_URL}/api/settings`, {
-      next: { revalidate: 300 }, // Revalidate every 5 minutes
+      cache: 'no-store',
     });
 
     if (response.ok) {
       const result = await response.json();
 
       if (result.success && result.data) {
-        const mergedSettings = deepMerge(defaultSettings, result.data);
-        cachedSettings = mergedSettings;
-        cacheTimestamp = Date.now();
-        return mergedSettings;
+        return deepMerge(defaultSettings, result.data);
       }
     }
   } catch (error) {

@@ -14,7 +14,7 @@ async function getCaseStudy(slug: string) {
   try {
     const url = `${API_URL}/api/case-studies/${slug}`;
     console.log("Fetching case study from:", url);
-    const res = await fetch(url, { next: { revalidate: 60 } });
+    const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) {
       console.log("Case study fetch failed with status:", res.status);
       return null;

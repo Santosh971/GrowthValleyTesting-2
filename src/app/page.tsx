@@ -1,68 +1,68 @@
 import { getPageContent, getSection } from "@/lib/content";
-import dynamic from "next/dynamic";
+import dynamicComponent from "next/dynamic";
+
+// Route segment config - disable static generation for dynamic content
+export const dynamic = 'force-dynamic';
 
 // Above-fold component - loaded with SSR for initial paint SEO
-const AnimatedHeroSection = dynamic(
+const AnimatedHeroSection = dynamicComponent(
   () => import("@/components/AnimatedSections").then(m => m.AnimatedHeroSection),
   { ssr: true }
 );
 
 // Below-fold components - lazy loaded for performance
-const AnimatedCredibilitySection = dynamic(
+const AnimatedCredibilitySection = dynamicComponent(
   () => import("@/components/AnimatedSections").then(m => m.AnimatedCredibilitySection),
   { ssr: false }
 );
 
-const AnimatedClientLogosSection = dynamic(
+const AnimatedClientLogosSection = dynamicComponent(
   () => import("@/components/AnimatedSections").then(m => m.AnimatedClientLogosSection),
   { ssr: false }
 );
 
-const AnimatedProblemSection = dynamic(
+const AnimatedProblemSection = dynamicComponent(
   () => import("@/components/AnimatedSections").then(m => m.AnimatedProblemSection),
   { ssr: false }
 );
 
-const AnimatedSolutionSection = dynamic(
+const AnimatedSolutionSection = dynamicComponent(
   () => import("@/components/AnimatedSections").then(m => m.AnimatedSolutionSection),
   { ssr: false }
 );
 
-const AnimatedIndustriesSection = dynamic(
+const AnimatedIndustriesSection = dynamicComponent(
   () => import("@/components/AnimatedSections").then(m => m.AnimatedIndustriesSection),
   { ssr: false }
 );
 
-const AnimatedTestimonialsSection = dynamic(
+const AnimatedTestimonialsSection = dynamicComponent(
   () => import("@/components/AnimatedSections").then(m => m.AnimatedTestimonialsSection),
   { ssr: false }
 );
 
-const AnimatedCaseStudyPreview = dynamic(
+const AnimatedCaseStudyPreview = dynamicComponent(
   () => import("@/components/AnimatedSections").then(m => m.AnimatedCaseStudyPreview),
   { ssr: false }
 );
 
-const AnimatedOperatingModel = dynamic(
+const AnimatedOperatingModel = dynamicComponent(
   () => import("@/components/AnimatedSections").then(m => m.AnimatedOperatingModel),
   { ssr: false }
 );
 
-const AnimatedFinalCTA = dynamic(
+const AnimatedFinalCTA = dynamicComponent(
   () => import("@/components/AnimatedSections").then(m => m.AnimatedFinalCTA),
   { ssr: false }
 );
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-// Disable static generation for dynamic content
-// export const dynamic = 'force-dynamic';
-export const revalidate = 60;
 // Fetch testimonials from API
 async function getTestimonials() {
   try {
     const res = await fetch(`${API_URL}/api/testimonials?status=active`, {
-      next: { revalidate: 60 }
+      cache: 'no-store'
     });
     const data = await res.json();
     return data.success ? data.data : [];
@@ -75,7 +75,7 @@ async function getTestimonials() {
 async function getClients() {
   try {
     const res = await fetch(`${API_URL}/api/clients?status=active`, {
-      next: { revalidate: 60 }
+      cache: 'no-store'
     });
     const data = await res.json();
     return data.success ? data.data : [];
@@ -89,7 +89,7 @@ async function getFeaturedCaseStudies() {
   try {
     // First try to get featured case studies
     const featuredRes = await fetch(`${API_URL}/api/case-studies/featured?limit=6`, {
-      next: { revalidate: 60 }
+      cache: 'no-store'
     });
     const featuredData = await featuredRes.json();
 
@@ -106,7 +106,7 @@ async function getFeaturedCaseStudies() {
 
     // If no featured case studies, fetch all published case studies
     const allRes = await fetch(`${API_URL}/api/case-studies?limit=6`, {
-      next: { revalidate: 60 }
+      cache: 'no-store'
     });
     const allData = await allRes.json();
 

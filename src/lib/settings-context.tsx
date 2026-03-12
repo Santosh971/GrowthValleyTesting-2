@@ -146,7 +146,7 @@ export function SettingsProvider({ children, initialSettings }: SettingsProvider
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/settings`,
-        { next: { revalidate: 300 } } // Cache for 5 minutes
+        { cache: 'no-store' }
       );
 
       const result = await response.json();
