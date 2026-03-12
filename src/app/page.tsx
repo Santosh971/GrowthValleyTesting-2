@@ -127,15 +127,44 @@ async function getFeaturedCaseStudies() {
   }
 }
 
+// Fetch industries data from dedicated industries page content
+async function getIndustries() {
+  try {
+    const res = await fetch(`${API_URL}/api/content/industries`, {
+      cache: 'no-store'
+    });
+    const data = await res.json();
+    if (data.success && data.data?.sections?.industries) {
+      // Transform industries page data to match home page component format
+      const industriesArray = data.data.sections.industries;
+      return {
+        title: 'Industries',
+        subtitle: 'Deep expertise across B2B sectors',
+        description: 'We\'ve helped companies across industries transform.',
+        items: industriesArray.map((industry: any) => ({
+          id: industry.id,
+          icon: industry.icon,
+          name: industry.name,
+          description: industry.description
+        }))
+      };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export default async function Home() {
   // Fetch dynamic content
   const content = await getPageContent('home');
 
-  // Fetch testimonials, clients, and featured case studies in parallel
-  const [testimonials, clients, featuredCaseStudies] = await Promise.all([
+  // Fetch testimonials, clients, featured case studies, and industries in parallel
+  const [testimonials, clients, featuredCaseStudies, industriesData] = await Promise.all([
     getTestimonials(),
     getClients(),
-    getFeaturedCaseStudies()
+    getFeaturedCaseStudies(),
+    getIndustries()
   ]);
 
   // Extract sections from content
@@ -143,10 +172,12 @@ export default async function Home() {
   const stats = getSection(content, 'stats');
   const problems = getSection(content, 'problems');
   const solutions = getSection(content, 'solutions');
-  const industries = getSection(content, 'industries');
   const caseStudyPreviewContent = getSection(content, 'caseStudyPreview');
   const process = getSection(content, 'process');
   const cta = getSection(content, 'cta');
+
+  // Use industries from dedicated API, fall back to home page content
+  const industries = industriesData || getSection(content, 'industries');
 
   // Merge CMS content with dynamic case studies
   // Only show case studies from backend/database - do NOT fall back to static CMS content

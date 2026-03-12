@@ -1,30 +1,15 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useLogo, useSettings } from "@/lib/settings-context";
 
-const footerLinks = {
-  solutions: [
-    { name: "Revenue Architecture", href: "/solutions#revenue-architecture" },
-    { name: "Sales Process Design", href: "/solutions#sales-process" },
-    { name: "RevOps Implementation", href: "/solutions#revops" },
-    { name: "Go-to-Market Strategy", href: "/solutions#gtm" },
-  ],
-  industries: [
-    { name: "SaaS & Technology", href: "/industries#saas" },
-    { name: "Professional Services", href: "/industries#professional-services" },
-    { name: "Manufacturing", href: "/industries#manufacturing" },
-    { name: "Financial Services", href: "/industries#financial-services" },
-  ],
-  company: [
-    { name: "About Us", href: "/company" },
-    { name: "Case Studies", href: "/case-studies" },
-    { name: "Blog", href: "/blog" },
-    { name: "Contact", href: "/contact" },
-  ],
-};
+interface FooterLink {
+  name: string;
+  href: string;
+}
 
 interface SocialLinks {
   linkedin?: string;
@@ -33,10 +18,87 @@ interface SocialLinks {
   instagram?: string;
   youtube?: string;
 }
+
+// Default fallback links
+const defaultSolutionLinks: FooterLink[] = [
+  { name: "Revenue Architecture", href: "/solutions#revenue-architecture" },
+  { name: "Sales Process Design", href: "/solutions#sales-process" },
+  { name: "RevOps Implementation", href: "/solutions#revops" },
+  { name: "Go-to-Market Strategy", href: "/solutions#gtm" },
+];
+
+const defaultIndustryLinks: FooterLink[] = [
+  { name: "SaaS & Technology", href: "/industries#saas" },
+  { name: "Professional Services", href: "/industries#professional-services" },
+  { name: "Manufacturing", href: "/industries#manufacturing" },
+  { name: "Financial Services", href: "/industries#financial-services" },
+];
+
+const companyLinks: FooterLink[] = [
+  { name: "About Us", href: "/company" },
+  { name: "Case Studies", href: "/case-studies" },
+  { name: "Blog", href: "/blog" },
+  { name: "Contact", href: "/contact" },
+];
+
 export default function Footer() {
   const { settings } = useSettings();
   const { logo: footerLogo, hasLogo, siteName } = useLogo();
   const currentYear = new Date().getFullYear();
+
+  // State for dynamic links
+  const [solutionLinks, setSolutionLinks] = useState<FooterLink[]>(defaultSolutionLinks);
+  const [industryLinks, setIndustryLinks] = useState<FooterLink[]>(defaultIndustryLinks);
+
+  // Fetch dynamic links from API
+  useEffect(() => {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+    const fetchLinks = async () => {
+      try {
+        // Fetch both solutions and industries in parallel
+        const [servicesRes, industriesRes] = await Promise.all([
+          fetch(`${API_URL}/api/content/services`, { cache: 'no-store' }),
+          fetch(`${API_URL}/api/content/industries`, { cache: 'no-store' })
+        ]);
+
+        // Process solutions/services
+        if (servicesRes.ok) {
+          const servicesData = await servicesRes.json();
+          if (servicesData.success && servicesData.data?.sections?.solutions) {
+            const solutions = servicesData.data.sections.solutions;
+            const links = solutions.slice(0, 4).map((item: { id: string; title: string }) => ({
+              name: item.title,
+              href: `/solutions#${item.id}`
+            }));
+            if (links.length > 0) {
+              setSolutionLinks(links);
+            }
+          }
+        }
+
+        // Process industries
+        if (industriesRes.ok) {
+          const industriesData = await industriesRes.json();
+          if (industriesData.success && industriesData.data?.sections?.industries) {
+            const industries = industriesData.data.sections.industries;
+            const links = industries.slice(0, 4).map((item: { id: string; name: string }) => ({
+              name: item.name,
+              href: `/industries#${item.id}`
+            }));
+            if (links.length > 0) {
+              setIndustryLinks(links);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch footer links:', error);
+        // Keep default links on error
+      }
+    };
+
+    fetchLinks();
+  }, []);
 
   // const socialLinks = settings?.socialLinks || {};
   const socialLinks: SocialLinks = settings?.socialLinks || {};
@@ -167,7 +229,7 @@ export default function Footer() {
                   Solutions
                 </h4>
                 <ul className="space-y-3">
-                  {footerLinks.solutions.map((link) => (
+                  {solutionLinks.map((link) => (
                     <li key={link.name}>
                       <Link
                         href={link.href}
@@ -189,7 +251,7 @@ export default function Footer() {
                   Industries
                 </h4>
                 <ul className="space-y-3">
-                  {footerLinks.industries.map((link) => (
+                  {industryLinks.map((link) => (
                     <li key={link.name}>
                       <Link
                         href={link.href}
@@ -211,7 +273,7 @@ export default function Footer() {
                   Company
                 </h4>
                 <ul className="space-y-3">
-                  {footerLinks.company.map((link) => (
+                  {companyLinks.map((link) => (
                     <li key={link.name}>
                       <Link
                         href={link.href}

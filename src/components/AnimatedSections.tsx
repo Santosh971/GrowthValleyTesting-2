@@ -396,7 +396,7 @@ export function AnimatedIndustriesSection({ industries }: { industries: any }) {
           viewport={{ once: true, margin: "-50px" }}
           variants={containerVariants}
         >
-          {(industries?.items || []).map((industry: any, index: number) => (
+          {(industries?.items || []).slice(0, 4).map((industry: any, index: number) => (
             <motion.div
               key={index}
               variants={itemVariants}
@@ -426,6 +426,17 @@ export function AnimatedIndustriesSection({ industries }: { industries: any }) {
               </Link>
             </motion.div>
           ))}
+        </motion.div>
+        <motion.div
+          className="text-center mt-12"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.3 }}
+        >
+          <Button href="/industries" variant="secondary">
+            Explore All Industries
+          </Button>
         </motion.div>
       </Container>
     </section>
