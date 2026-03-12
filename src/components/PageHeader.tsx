@@ -17,7 +17,7 @@ export default function PageHeader({
 }: PageHeaderProps) {
   return (
     <section
-      className={`relative pt-28 pb-12 md:pt-32 md:pb-16 overflow-hidden ${background === "grey" ? "bg-brand-grey-50 dark:bg-brand-grey-900" : "bg-white dark:bg-brand-grey-950"
+      className={`relative pt-28 pb-12 md:pt-20 md:pb-16 overflow-hidden ${background === "grey" ? "bg-brand-grey-50 dark:bg-brand-grey-900" : "bg-white dark:bg-brand-grey-950"
         }`}
     >
       {/* Subtle Background Pattern */}

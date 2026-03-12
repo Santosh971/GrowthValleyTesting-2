@@ -71,7 +71,7 @@ function StaticDecorativeShapes() {
 // Hero Section - Optimized for LCP (no motion on critical content)
 export function AnimatedHeroSection({ hero }: { hero: any }) {
   return (
-    <section className="relative pt-32 pb-16 md:pt-40 md:pb-24 lg:pt-48 lg:pb-32 bg-white dark:bg-brand-grey-950 overflow-hidden">
+    <section className="relative pt-32 pb-16 md:pt-40 md:pb-24 lg:pt-20 lg:pb-32 bg-white dark:bg-brand-grey-950 overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-hero-gradient bg-dot-pattern" />
       <StaticDecorativeShapes />

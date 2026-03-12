@@ -58,7 +58,7 @@ export default function CaseStudiesClient({
 
         <Container className="relative z-10">
           {/* Case Studies Grid */}
-          <motion.div
+          {/* <motion.div
             className="grid sm:grid-cols-1 lg:grid-cols-2 gap-8"
             variants={containerVariants}
             initial="hidden"
@@ -95,8 +95,51 @@ export default function CaseStudiesClient({
                 </Link>
               </motion.div>
             ))}
-          </motion.div>
+          </motion.div> */}
+          <motion.div
+            className="grid sm:grid-cols-1 lg:grid-cols-2 gap-8"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
+            {caseStudies.map((cs) => (
+              <motion.div
+                key={cs._id || cs.slug}
+                variants={itemVariants}
+                whileHover={{
+                  y: -8,
+                  boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+                }}
+                className="h-[28rem] w-full" // fixed height for all case study cards
+              >
+                <Link
+                  href={`/case-studies/${cs.slug}`}
+                  className="block bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-800 hover:border-accent transition-all duration-300 relative overflow-hidden rounded-lg h-full flex flex-col"
+                >
+                  {/* Background Shape */}
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-accent/5" />
 
+                  {/* Content */}
+                  <div className="flex flex-col justify-between p-8 h-full">
+                    <div>
+                      <h3 className="text-heading-3 text-brand-black dark:text-white mb-4 relative z-10 line-clamp-2">
+                        {cs.title}
+                      </h3>
+
+                      <p className="text-body text-brand-grey-500 dark:text-brand-grey-400 mb-6 relative z-10 line-clamp-5">
+                        {cs.challenge}
+                      </p>
+                    </div>
+
+                    <span className="text-label text-accent font-medium mt-auto relative z-10">
+                      Read Case Study →
+                    </span>
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </motion.div>
           {caseStudies.length === 0 && (
             <div className="text-center py-12">
               <p className="text-body-lg text-brand-grey-500 dark:text-brand-grey-400">
