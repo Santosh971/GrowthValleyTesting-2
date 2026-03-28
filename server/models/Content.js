@@ -29,8 +29,7 @@ const contentSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Page name is required'],
     lowercase: true,
-    trim: true,
-    index: true
+    trim: true
   },
   sections: {
     type: Map,

@@ -59,7 +59,7 @@ const pageSeoSchema = new mongoose.Schema({
 });
 
 // Indexes
-pageSeoSchema.index({ page: 1 }, { unique: true });
+// Note: 'page' index is already created by unique: true in schema definition
 pageSeoSchema.index({ isActive: 1 });
 
 // Transform output

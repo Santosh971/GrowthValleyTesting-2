@@ -204,12 +204,9 @@ export default function BlogClient({ featuredPosts, recentPosts, publishedBlogs 
                           <span>•</span>
                           <span>{post.readTime || 5} min read</span>
                         </div>
-                        <Link
-                          href={`/blog/${post.slug}`}
-                          className="text-accent text-body-sm font-semibold hover:underline"
-                        >
+                        <span className="text-accent text-body-sm font-semibold group-hover:underline">
                           Read More →
-                        </Link>
+                        </span>
                       </div>
                     </div>
                   </Link>
@@ -360,12 +357,9 @@ export default function BlogClient({ featuredPosts, recentPosts, publishedBlogs 
                           </span>
                           <span>{post.readTime || 5} min read</span>
                         </div>
-                        <Link
-                          href={`/blog/${post.slug}`}
-                          className="text-accent text-body-sm font-semibold hover:underline"
-                        >
+                        <span className="text-accent text-body-sm font-semibold group-hover:underline">
                           Read More →
-                        </Link>
+                        </span>
                       </div>
                     </div>
                   </Link>
