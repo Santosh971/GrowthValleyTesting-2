@@ -3,8 +3,9 @@ import Section from "@/components/Section";
 import PageHeader from "@/components/PageHeader";
 import Button from "@/components/Button";
 
-// API URL - use NEXT_PUBLIC_API_URL for both client and server components
-const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || "http://localhost:3001";
+// Use relative URL to leverage Next.js API proxy route
+// This works in both development and production (Vercel) without environment variable issues
+const API_BASE = "";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -12,16 +13,28 @@ interface Props {
 
 async function getCaseStudy(slug: string) {
   try {
-    const url = `${API_URL}/api/case-studies/${slug}`;
-    console.log("Fetching case study from:", url);
-    const res = await fetch(url, { cache: 'no-store' });
+    // Use relative URL - Next.js API proxy handles the backend call
+    const res = await fetch(`${API_BASE}/api/case-studies/${slug}`, {
+      cache: "no-store",
+      next: { revalidate: 60 },
+    });
+
     if (!res.ok) {
-      console.log("Case study fetch failed with status:", res.status);
+      console.error("Case study fetch failed with status:", res.status);
       return null;
     }
+
     const data = await res.json();
-    console.log("Case study fetch success:", data.success);
-    return data.data;
+
+    // Handle different API response formats
+    if (data.data) {
+      return data.data;
+    }
+    if (data.caseStudy) {
+      return data.caseStudy;
+    }
+
+    return null;
   } catch (error) {
     console.error("Failed to fetch case study:", error);
     return null;

@@ -12,11 +12,18 @@ export const dynamic = 'force-dynamic';
 
 async function getBlogs() {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/blog`,
-      { cache: "no-store" }
-    );
-    if (!res.ok) return [];
+    // Use relative URL - Next.js API proxy handles the backend call
+    // This works in both development and production (Vercel)
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/api/blog`, {
+      cache: "no-store",
+      next: { revalidate: 60 },
+    });
+
+    if (!res.ok) {
+      console.error("Blogs fetch failed with status:", res.status);
+      return [];
+    }
+
     const data = await res.json();
     return data.data || [];
   } catch (error) {

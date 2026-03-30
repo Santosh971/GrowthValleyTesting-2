@@ -24,11 +24,18 @@ function getExcerpt(content: string, maxLength: number = 150): string {
 
 async function getBlogs() {
   try {
-    const res = await fetch(
-      `${process.env.API_URL || "http://localhost:3001"}/api/blog`,
-      { cache: "no-store" }
-    );
-    if (!res.ok) return [];
+    // Use relative URL - Next.js API proxy handles the backend call
+    // This works in both development and production (Vercel)
+    const res = await fetch(`/api/blog`, {
+      cache: "no-store",
+      next: { revalidate: 60 },
+    });
+
+    if (!res.ok) {
+      console.error("Blogs fetch failed with status:", res.status);
+      return [];
+    }
+
     const data = await res.json();
     return data.data || [];
   } catch (error) {

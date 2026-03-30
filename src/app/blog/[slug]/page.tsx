@@ -4,8 +4,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getImageUrl } from "@/lib/utils";
 
-// API URL - use NEXT_PUBLIC_API_URL for both client and server components
-const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || "http://localhost:3001";
+// Use relative URL to leverage Next.js API proxy route
+// This works in both development and production (Vercel) without environment variable issues
+const API_BASE = "";
 
 // Content block types
 interface ContentBlock {
@@ -103,16 +104,29 @@ interface Props {
 
 async function getBlog(slug: string) {
   try {
-    const url = `${API_URL}/api/blog/${slug}`;
-    console.log("Fetching blog from:", url);
-    const res = await fetch(url, { cache: "no-store" });
+    // Use relative URL - Next.js API proxy handles the backend call
+    const res = await fetch(`${API_BASE}/api/blog/${slug}`, {
+      cache: "no-store",
+      // Add next revalidate for ISR support
+      next: { revalidate: 60 },
+    });
+
     if (!res.ok) {
-      console.log("Blog fetch failed with status:", res.status);
+      console.error("Blog fetch failed with status:", res.status);
       return null;
     }
+
     const data = await res.json();
-    console.log("Blog fetch success:", data.success);
-    return data.data || null;
+
+    // Handle different API response formats
+    if (data.data) {
+      return data.data;
+    }
+    if (data.blog) {
+      return data.blog;
+    }
+
+    return null;
   } catch (error) {
     console.error("Failed to fetch blog:", error);
     return null;
@@ -121,17 +135,22 @@ async function getBlog(slug: string) {
 
 async function getRelatedBlogs(currentSlug: string, category: string) {
   try {
-    const res = await fetch(
-      `${API_URL}/api/blog`,
-      { cache: "no-store" }
-    );
+    // Use relative URL - Next.js API proxy handles the backend call
+    const res = await fetch(`${API_BASE}/api/blog`, {
+      cache: "no-store",
+      next: { revalidate: 60 },
+    });
+
     if (!res.ok) return [];
+
     const data = await res.json();
     const blogs = data.data || [];
+
     return blogs
       .filter((post: any) => post.status === "published" && post.slug !== currentSlug)
       .slice(0, 3);
   } catch (error) {
+    console.error("Failed to fetch related blogs:", error);
     return [];
   }
 }
@@ -174,13 +193,21 @@ export async function generateMetadata({ params }: Props) {
 
 export async function generateStaticParams() {
   try {
-    const res = await fetch(`${API_URL}/api/blog`);
+    // Use relative URL - Next.js API proxy handles the backend call
+    const res = await fetch(`${API_BASE}/api/blog`, {
+      cache: "no-store",
+    });
+
     if (!res.ok) return [];
+
     const data = await res.json();
-    return (data.data || []).map((post: any) => ({
+    const blogs = data.data || [];
+
+    return blogs.map((post: any) => ({
       slug: post.slug,
     }));
-  } catch {
+  } catch (error) {
+    console.error("Failed to generate static params:", error);
     return [];
   }
 }

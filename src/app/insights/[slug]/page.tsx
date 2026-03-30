@@ -4,19 +4,38 @@ import PageHeader from "@/components/PageHeader";
 import Button from "@/components/Button";
 import Link from "next/link";
 
+// Use relative URL to leverage Next.js API proxy route
+// This works in both development and production (Vercel) without environment variable issues
+const API_BASE = "";
+
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
 async function getBlogPost(slug: string) {
   try {
-    const res = await fetch(
-      `${process.env.API_URL || "http://localhost:3001"}/api/blog/${slug}`,
-      { cache: "no-store" }
-    );
-    if (!res.ok) return null;
+    // Use relative URL - Next.js API proxy handles the backend call
+    const res = await fetch(`${API_BASE}/api/blog/${slug}`, {
+      cache: "no-store",
+      next: { revalidate: 60 },
+    });
+
+    if (!res.ok) {
+      console.error("Blog post fetch failed with status:", res.status);
+      return null;
+    }
+
     const data = await res.json();
-    return data.data;
+
+    // Handle different API response formats
+    if (data.data) {
+      return data.data;
+    }
+    if (data.blog) {
+      return data.blog;
+    }
+
+    return null;
   } catch (error) {
     console.error("Failed to fetch blog post:", error);
     return null;
