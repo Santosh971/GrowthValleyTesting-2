@@ -26,12 +26,26 @@ export function truncate(text: string, length: number): string {
   return text.slice(0, length).trim() + '...';
 }
 // Get full URL for images/media
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-
+// Handles Cloudinary URLs, absolute URLs, and relative paths
 export const getImageUrl = (path?: string) => {
   if (!path) return ''; // fallback if no image
-  if (path.startsWith('http')) return path; // full URL already
-  return `${API_BASE_URL}${path}`; // prepend backend URL
+
+  // Already a full URL (Cloudinary, external, etc.)
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+
+  // Relative path from backend - construct full URL
+  // In production, use NEXT_PUBLIC_API_URL; in development, use localhost
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+
+  // If path starts with /, it's a relative path
+  if (path.startsWith('/')) {
+    return `${baseUrl}${path}`;
+  }
+
+  // Otherwise, assume it's a path that needs /uploads prefix
+  return `${baseUrl}/uploads/${path}`;
 };
 
 export async function fetchAPI(endpoint: string) {
