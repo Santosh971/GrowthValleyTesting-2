@@ -9,7 +9,7 @@ module.exports = {
   // Database - Set MONGODB_URI in .env file (required for production)
   // Falls back to localhost for development only
   mongodbUri: process.env.MONGODB_URI || (process.env.NODE_ENV === 'production'
-    ? 'mongodb+srv://santoshshimpankar61_db_user:1P5ckPjwLsocWExN@cluster0.tioxubx.mongodb.net/growthvalley'  // Will throw error in production if not set
+    ? 'mongodb+srv://doctor_management:Tejas@mycluster.qetrmfc.mongodb.net/growthvalley'  // Will throw error in production if not set
     : 'mongodb://localhost:27017/growthvalley'),
 
   // JWT

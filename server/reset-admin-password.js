@@ -12,7 +12,7 @@ const ADMIN_EMAIL = 'admin@growthvalley.com';
 const NEW_PASSWORD = 'admin@123';
 
 // Database connection
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://santoshshimpankar61_db_user:1P5ckPjwLsocWExN@cluster0.tioxubx.mongodb.net/';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://doctor_management:Tejas@mycluster.qetrmfc.mongodb.net/growthvalley';
 
 // Admin Schema (same as model)
 const adminSchema = new mongoose.Schema({
