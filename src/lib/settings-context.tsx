@@ -228,14 +228,17 @@ export function useLogo() {
   // In light mode, show dark logo (for light backgrounds)
   // In dark mode, show light logo (for dark backgrounds)
   // Determine logo based on current theme
-  const logo = mounted && isDark ? (logoLight || logoDark) : (logoDark || logoLight);
+  // Only return actual logo after mount to prevent hydration mismatch
+  const actualLogo = mounted && isDark ? (logoLight || logoDark) : (logoDark || logoLight);
+  const logo = mounted ? actualLogo : '';
 
   return {
     logo,
     logoLight,
     logoDark,
     siteName: settings?.siteName || defaultSettings.siteName,
-    hasLogo: !!(settings?.businessInfo?.logo || settings?.businessInfo?.logoDark),
+    // Only return hasLogo: true after mount to prevent hydration mismatch
+    hasLogo: mounted ? !!(settings?.businessInfo?.logo || settings?.businessInfo?.logoDark) : false,
     loading,
     mounted,
   };

@@ -5,7 +5,7 @@ import { SectionHeader } from "@/components/Section";
 import Button from "@/components/Button";
 import { motion, useRef } from "framer-motion";
 import { getImageUrl } from "@/lib/utils";
-import { useState, useRef as reactRef } from "react";
+import { useState, useRef as reactRef, useEffect } from "react";
 
 interface TeamMember {
   _id: string;
@@ -57,8 +57,19 @@ const itemVariants = {
 // Team Slider Component
 function TeamSlider({ members }: { members: TeamMember[] }) {
   const sliderRef = reactRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    // Check scroll position after mount
+    if (sliderRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = sliderRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  }, []);
 
   const checkScrollButtons = () => {
     if (sliderRef.current) {
@@ -87,34 +98,38 @@ function TeamSlider({ members }: { members: TeamMember[] }) {
   return (
     <div className="relative">
       {/* Navigation Arrows - Desktop */}
-      <div className="hidden md:flex absolute -left-4 top-1/2 -translate-y-1/2 z-10">
-        <motion.button
-          onClick={() => scroll('left')}
-          disabled={!canScrollLeft}
-          className="w-12 h-12 rounded-full bg-white dark:bg-brand-grey-800 border border-brand-grey-200 dark:border-brand-grey-700 shadow-lg flex items-center justify-center text-brand-black dark:text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-brand-grey-50 dark:hover:bg-brand-grey-700 transition-colors"
-          whileHover={canScrollLeft ? { scale: 1.1 } : {}}
-          whileTap={canScrollLeft ? { scale: 0.95 } : {}}
-          aria-label="Scroll left"
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </motion.button>
-      </div>
-      <div className="hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 z-10">
-        <motion.button
-          onClick={() => scroll('right')}
-          disabled={!canScrollRight}
-          className="w-12 h-12 rounded-full bg-white dark:bg-brand-grey-800 border border-brand-grey-200 dark:border-brand-grey-700 shadow-lg flex items-center justify-center text-brand-black dark:text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-brand-grey-50 dark:hover:bg-brand-grey-700 transition-colors"
-          whileHover={canScrollRight ? { scale: 1.1 } : {}}
-          whileTap={canScrollRight ? { scale: 0.95 } : {}}
-          aria-label="Scroll right"
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </motion.button>
-      </div>
+      {mounted && (
+        <>
+          <div className="hidden md:flex absolute -left-4 top-1/2 -translate-y-1/2 z-10">
+            <motion.button
+              onClick={() => scroll('left')}
+              disabled={!canScrollLeft}
+              className="w-12 h-12 rounded-full bg-white dark:bg-brand-grey-800 border border-brand-grey-200 dark:border-brand-grey-700 shadow-lg flex items-center justify-center text-brand-black dark:text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-brand-grey-50 dark:hover:bg-brand-grey-700 transition-colors"
+              whileHover={canScrollLeft ? { scale: 1.1 } : {}}
+              whileTap={canScrollLeft ? { scale: 0.95 } : {}}
+              aria-label="Scroll left"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </motion.button>
+          </div>
+          <div className="hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 z-10">
+            <motion.button
+              onClick={() => scroll('right')}
+              disabled={!canScrollRight}
+              className="w-12 h-12 rounded-full bg-white dark:bg-brand-grey-800 border border-brand-grey-200 dark:border-brand-grey-700 shadow-lg flex items-center justify-center text-brand-black dark:text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-brand-grey-50 dark:hover:bg-brand-grey-700 transition-colors"
+              whileHover={canScrollRight ? { scale: 1.1 } : {}}
+              whileTap={canScrollRight ? { scale: 0.95 } : {}}
+              aria-label="Scroll right"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </motion.button>
+          </div>
+        </>
+      )}
 
       {/* Slider Container */}
       <div

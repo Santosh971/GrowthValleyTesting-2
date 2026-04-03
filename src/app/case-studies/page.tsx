@@ -5,6 +5,8 @@ import CaseStudiesClient from "./CaseStudiesClient";
 
 export const dynamic = 'force-dynamic';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
 // Interface for case study from database
 interface CaseStudy {
   _id?: string;
@@ -31,9 +33,7 @@ interface CTASection {
 
 async function getCaseStudies(): Promise<CaseStudy[]> {
   try {
-    // Use relative URL - Next.js API proxy handles the backend call
-    // This works in both development and production (Vercel)
-    const res = await fetch(`/api/case-studies`, {
+    const res = await fetch(`${API_URL}/api/case-studies`, {
       cache: "no-store",
       next: { revalidate: 60 },
     });

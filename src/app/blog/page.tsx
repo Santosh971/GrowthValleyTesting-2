@@ -10,11 +10,11 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
 async function getBlogs() {
   try {
-    // Use relative URL - Next.js API proxy handles the backend call
-    // This works in both development and production (Vercel)
-    const res = await fetch(`/api/blog`, {
+    const res = await fetch(`${API_URL}/api/blog`, {
       cache: "no-store",
       next: { revalidate: 60 },
     });

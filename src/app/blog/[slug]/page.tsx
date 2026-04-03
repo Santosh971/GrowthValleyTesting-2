@@ -4,9 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getImageUrl } from "@/lib/utils";
 
-// Use relative URL to leverage Next.js API proxy route
-// This works in both development and production (Vercel) without environment variable issues
-const API_BASE = "";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 // Content block types
 interface ContentBlock {
@@ -104,10 +102,8 @@ interface Props {
 
 async function getBlog(slug: string) {
   try {
-    // Use relative URL - Next.js API proxy handles the backend call
-    const res = await fetch(`${API_BASE}/api/blog/${slug}`, {
+    const res = await fetch(`${API_URL}/api/blog/${slug}`, {
       cache: "no-store",
-      // Add next revalidate for ISR support
       next: { revalidate: 60 },
     });
 
@@ -135,8 +131,7 @@ async function getBlog(slug: string) {
 
 async function getRelatedBlogs(currentSlug: string, category: string) {
   try {
-    // Use relative URL - Next.js API proxy handles the backend call
-    const res = await fetch(`${API_BASE}/api/blog`, {
+    const res = await fetch(`${API_URL}/api/blog`, {
       cache: "no-store",
       next: { revalidate: 60 },
     });
@@ -193,8 +188,7 @@ export async function generateMetadata({ params }: Props) {
 
 export async function generateStaticParams() {
   try {
-    // Use relative URL - Next.js API proxy handles the backend call
-    const res = await fetch(`${API_BASE}/api/blog`, {
+    const res = await fetch(`${API_URL}/api/blog`, {
       cache: "no-store",
     });
 

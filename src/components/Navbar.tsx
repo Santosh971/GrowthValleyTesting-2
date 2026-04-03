@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ThemeToggle from "./ThemeToggle";
@@ -65,20 +64,15 @@ export default function Navbar() {
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2">
               {mounted && hasLogo && logo ? (
-                <motion.div
+                // eslint-disable-next-line @next/next/no-img-element
+                <motion.img
+                  src={logo}
+                  alt={siteName}
+                  className="h-20 w-32 md:w-40 lg:w-48 object-contain"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.3 }}
-                >
-                  <Image
-                    src={logo}
-                    alt={siteName}
-                    width={192}
-                    height={80}
-                    className="h-20 w-32 md:w-40 lg:w-48 object-contain"
-                    priority
-                  />
-                </motion.div>
+                />
               ) : (
                 <motion.span
                   className="text-2xl font-semibold tracking-tight text-brand-black dark:text-white"
